@@ -11,7 +11,6 @@ Export:
 """
 
 import argparse
-import logging
 import sys
 from copy import deepcopy
 from pathlib import Path
@@ -28,11 +27,11 @@ import torch
 import torch.nn as nn
 from tensorflow import keras
 
-from models.common import Bottleneck, BottleneckCSP, Concat, Conv, C3, DWConv, Focus, SPP, SPPF, autopad
+from models.common import C3, SPP, SPPF, Bottleneck, BottleneckCSP, Concat, Conv, DWConv, Focus, autopad
 from models.experimental import CrossConv, MixConv2d, attempt_load
 from models.yolo import Detect
-from utils.general import make_divisible, print_args, LOGGER
 from utils.activations import SiLU
+from utils.general import LOGGER, make_divisible, print_args
 
 
 class TFBN(keras.layers.Layer):
@@ -233,7 +232,7 @@ class TFDetect(keras.layers.Layer):
                 xy /= tf.constant([[self.imgsz[1], self.imgsz[0]]], dtype=tf.float32)
                 wh /= tf.constant([[self.imgsz[1], self.imgsz[0]]], dtype=tf.float32)
                 y = tf.concat([xy, wh, y[..., 4:]], -1)
-                z.append(tf.reshape(y, [-1, 3 * ny * nx, self.no]))
+                z.append(tf.reshape(y, [-1, self.na * ny * nx, self.no]))
 
         return x if self.training else (tf.concat(z, 1), x)
 
