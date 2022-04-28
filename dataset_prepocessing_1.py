@@ -11,7 +11,7 @@ from numpy import load
 
 data_json = {
     "info": {
-        "description": "Mixed Tools Dataset",
+        "description": "Camera Param Dataset",
         "url": "",
         "version": "1.0",
         "year": 2022,
@@ -31,105 +31,13 @@ data_json = {
     "segment_info": []  # <-- Only in Panoptic annotations
 }
 
-old_classes = {
-    "Cube": 100,
-    "BallJoint": 0,
-    "Base_Rev": 1,
-    "circle": 2,
-    "gear_big_thread": 3,
-    "gear_small_inner": 4,
-    "gear_small_pole": 5,
-    "Headplate": 6,
-    "Jaw1": 7,
-    "Jaw2": 8,
-    "Knobx2": 9,
-    "nut_big": 10,
-    "Nut_Deskclamp": 11,
-    "nut_small": 12,
-    "Padx2": 13,
-    "Pinx4": 14,
-    "pole_big_thread": 15,
-    "Rep": 16,
-    "Screw_Desk_Clamp": 17,
-    "screw": 18,
-    "screw_big_thread": 19,
-    "screw_small_thread": 20,
-    "Slider": 21,
-    "SlidingHingex4": 22,
-    "Threadsx2": 23,
-    "Screw_Desk_Clamp_Vise": 24,
-    "gear_outer": 25,
-    "tool_1": 26,
-    "Rotator": 27,
-    "1x1_Plate": 28,
-    "1x2_Plate": 29,
-    "1x3_Plate": 30,
-    "1x4_Plate": 31,
-    "1x5_Plate": 32,
-    "1x6_Plate": 33,
-    "1x8_Plate": 34,
-    "1x9_Plate": 35,
-    "1x10_Plate": 36,
-    "1x11_Plate": 37,
-    "1x12_Plate": 38,
-    "1x1_Brick": 39,
-    "1x2_Brick": 40,
-    "1x3_Brick": 41,
-    "1x4_Brick": 42,
-    "1x5_Brick": 43,
-    "1x6_Brick": 44,
-    "1x8_Brick": 45,
-    "1x9_Brick": 46,
-    "1x10_Brick": 47,
-    "1x11_Brick": 48,
-    "1x12_Brick": 49,
-    "2x1_Plate": 50,
-    "2x2_Plate": 51,
-    "2x3_Plate": 52,
-    "2x4_Plate": 53,
-    "2x5_Plate": 54,
-    "2x6_Plate": 55,
-    "2x8_Plate": 56,
-    "2x9_Plate": 57,
-    "2x10_Plate": 58,
-    "2x11_Plate": 59,
-    "2x12_Plate": 60,
-    "2x1_Brick": 61,
-    "2x2_Brick": 62,
-    "2x3_Brick": 63,
-    "2x4_Brick": 64,
-    "2x5_Brick": 65,
-    "2x6_Brick": 66,
-    "2x7_Brick": 67,
-    "2x8_Brick": 68,
-    "2x9_Brick": 69,
-    "2x10_Brick": 70,
-    "2x11_Brick": 71,
-    "2x12_Brick": 72,
-    "Nagel": 73,
-    "AimingArm130": 74,
-    "InsertionHandle": 75,
-    "Covidien_Mesh_0": 76,
-    "Covidien_Front_Cylinder": 77
-}
-
-new_classes = {
-    "BallJoint": 0,
-    "tool_1": 1,
-    "Rotator": 2,
-    "AimingArm130": 3,
-    "Covidien_Mesh_0": 4,
-    "Covidien_Front_Cylinder": 5,
-    "Headplate": 6,
-    "Nut_Deskclamp": 7,
-    "Knobx2": 8,
-    "Screw_Desk_Clamp_Vise": 9,
-    "Screw_Desk_Clamp": 10,
-    "screw_small_thread": 11,
-    "Threadsx2": 12,
-    "Rep": 13,
-    "Base_Rev": 14,
-    "Slider": 15
+classes = {
+    'pringles': 1,
+    'mustard': 2,
+    'tomato_soup': 3,
+    'rubiks': 4,
+    'cracker_box': 5,
+    'baseball': 6
 }
 
 def search_dict(dict, search_id):
@@ -163,9 +71,9 @@ def write_labels_to_coco_yolo_format(output_file_name, output_file_path):
             file_name = item['file_name'].split("/")[1]
             width = item['width']
             height = item['height']
-            value = list(filter(lambda item1: item1['image_id'] == image_id, data['annotations']))
-            outfile = open(output_file_path + '/%s.txt' % (file_name[:-4]),
-                           'w')
+            value = list(filter(lambda item1: item1['image_id'] == str(image_id), data['annotations']))
+            # os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
+            outfile = open(output_file_path + '/%s.txt' % (file_name[:-4]),  'w')
             for item2 in value:
                 category_id = item2['category_id']
                 class_id = category_id
@@ -175,11 +83,11 @@ def write_labels_to_coco_yolo_format(output_file_name, output_file_path):
             outfile.close()
 
 
-def add_image(data, image_id, syn_images):
+def add_image(data, image_id, syn_images, split, index):
     # print(filename)
     syn_images.append({
         "license": 1,
-        "file_name": data["file_name"],
+        "file_name": 'images/' + str(index) + '.jpg',
         "coco_url": "",
         "height": int(data["width"]),
         "width": int(data["height"]),
@@ -194,29 +102,27 @@ def parse_task_info_to_file(dataset_destination, task_name, files, syn_images, s
     print("Finished " + task_name)
     data_json['annotations'] = syn_images_anno
     data_json['images'] = syn_images
-    with open(dataset_destination + task_name + '_tools_mixed_coco_style.json',
-              'w+') as f:
+    with open(dataset_destination + task_name + '_coco_style.json', 'w+') as f:
         json.dump(data_json, f)
     with open(dataset_destination + task_name + '.txt', 'w+') as f:
         f.write(files)
 
 
-def run_data_parsing(threshold, dataset_origin, dataset_destination):
+def run_data_parsing(index, threshold, dataset_origin, dataset_destination):
     '''
     parse to yolo format
     '''
     syn_images = []
     syn_images_anno = []
 
-    train_ids = {}
-    val_ids = {}
-    test_ids = {}
-    ids = {}
     files = ""
-    index = 0
 
-    json_file = open(dataset_origin + "coco_annotations.json", 'r')
-    data = json.load(json_file)
+    split = 'train'
+
+    counter = 0
+
+    json_file = open(dataset_origin + "coco_annotations2.json", 'r')
+    data = json.load(json_file)[0]
 
     for elem_i in data["images"]:
         image_id = elem_i['id']
@@ -224,60 +130,73 @@ def run_data_parsing(threshold, dataset_origin, dataset_destination):
         source_path = dataset_origin + elem_i["file_name"]
         if os.path.exists(source_path):
 
-            syn_images = add_image(elem_i, image_id, syn_images)
+            syn_images = add_image(elem_i, image_id, syn_images, split, index)
 
-            files += elem_i["file_name"] + "\n"
+            # files += elem_i["file_name"] + "\n"
+            files += 'images/' + str(index) + '.jpg\n'
 
             for anno in data["annotations"]:
                 if image_id == anno["image_id"] and anno["category_id"] != 100:
                     # print(anno["image_id"], anno["category_id"], anno["bbox"])
-                    if search_dict(old_classes, anno['category_id']) in new_classes.keys():
-                        mapped_id = new_classes[search_dict(old_classes, anno['category_id'])]
-                        elem_name = str(mapped_id)
-                        syn_images_anno.append({
-                            "segmentation": [],
-                            "area": 0,
-                            "iscrowd": 0,
-                            "image_id": image_id,
-                            "bbox": anno["bbox"],
-                            "category_id": mapped_id,
-                            "id": int(elem_name + str(image_id))
-                        })
-                        if elem_name not in ids.keys():
-                            ids[elem_name] = 1
-                        else:
-                            ids[elem_name] = ids[elem_name] + 1
+                    mapped_id = anno['category_id']
+                    elem_name = str(mapped_id)
+                    syn_images_anno.append({
+                        "segmentation": [],
+                        "area": 0,
+                        "iscrowd": 0,
+                        "image_id": str(index),
+                        "bbox": anno["bbox"],
+                        "category_id": mapped_id,
+                        "id": int(elem_name + str(index))
+                    })
 
-            if index <= threshold[0]:
-                # print(source_path)
-                shutil.copy(source_path, dataset_destination + "images/val")
+            if counter <= threshold[0]:
+                # print(source_path, dataset_destination + "images/train/" + str(index) + '.jpg')
+                dest_fpath = dataset_destination + "images/train/"
+                os.makedirs(os.path.dirname(dest_fpath), exist_ok=True)
+                shutil.copy(source_path,  dest_fpath + str(index) + '.jpg')
 
-            # elif threshold[0] < index <= threshold[1]:
-            #    shutil.copy(source_path, dataset_destination + "images/val")
-            # else:
-            #    shutil.copy(source_path, dataset_destination + "images/test")
+            elif threshold[0] < counter <= threshold[1]:
+                dest_fpath = dataset_destination + "images/val/"
+                os.makedirs(os.path.dirname(dest_fpath), exist_ok=True)
+                shutil.copy(source_path, dest_fpath + str(index) + '.jpg')
+            else:
+                break
+                #    shutil.copy(source_path, dataset_destination + "images/test")
 
             # print(index == threshold[0])
-            if index == threshold[0]:
-                parse_task_info_to_file(dataset_destination, "val", files, syn_images, syn_images_anno)
-                train_ids = ids
-                break
+            if counter == threshold[0]:
+                parse_task_info_to_file(dataset_destination, "train", files, syn_images, syn_images_anno)
+                syn_images = []
+                syn_images_anno = []
+                files = ''
+                split = 'val'
 
-            print(index)
+            if counter == threshold[1]:
+                parse_task_info_to_file(dataset_destination, "val", files, syn_images, syn_images_anno)
+                syn_images = []
+                syn_images_anno = []
+                files = ''
+
+            counter += 1
             index += 1
 
-    return train_ids, val_ids, test_ids
+    return counter
 
 if __name__ == '__main__':
-    threshold = [1831]
+    threshold = [1211, 1808]
     # threshold = [1, 2, 3]
     # load array
-
-    dataset_origin = "D:/BlenderProc_dataset3/validation/coco_data/"
-    # dataset_origin = "C:/Users/Admin/Documents/GitHub/BlenderProc/examples/basics/physics_positioning_combined/output/coco_data_val/"
-    dataset_destination = "D:/YoloV5_datasets/data/mixed_tools_marss/"
-    run_data_parsing(threshold, dataset_origin, dataset_destination)
+    index = 0
+    dataset_origin = "/media/hannah/Data/camera_parameters/out_oak_d_lite/coco_data/"
+    dataset_destination = "/media/hannah/Data/camera_parameters/mixed_camera_param/"
+    index = run_data_parsing(0, threshold, dataset_origin, dataset_destination)
+    print(index)
 
     write_labels_to_coco_yolo_format(
-        dataset_destination + 'val_tools_mixed_coco_style.json',
-        dataset_destination + 'labels/val')
+        dataset_destination + 'train_coco_style.json',
+        dataset_destination + 'labels/train/')
+
+    write_labels_to_coco_yolo_format(
+        dataset_destination + 'val_coco_style.json',
+        dataset_destination + 'labels/val/')
