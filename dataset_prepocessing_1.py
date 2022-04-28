@@ -31,13 +31,22 @@ data_json = {
     "segment_info": []  # <-- Only in Panoptic annotations
 }
 
-classes = {
+old_classes = {
     'pringles': 1,
     'mustard': 2,
     'tomato_soup': 3,
     'rubiks': 4,
     'cracker_box': 5,
     'baseball': 6
+}
+
+new_classes = {
+    'pringles': 0,
+    'mustard': 1,
+    'tomato_soup': 2,
+    'rubiks': 3,
+    'cracker_box': 4,
+    'baseball': 5
 }
 
 def search_dict(dict, search_id):
@@ -137,18 +146,19 @@ def run_data_parsing(index, threshold, dataset_origin, dataset_destination):
 
             for anno in data["annotations"]:
                 if image_id == anno["image_id"] and anno["category_id"] != 100:
-                    # print(anno["image_id"], anno["category_id"], anno["bbox"])
-                    mapped_id = anno['category_id']
-                    elem_name = str(mapped_id)
-                    syn_images_anno.append({
-                        "segmentation": [],
-                        "area": 0,
-                        "iscrowd": 0,
-                        "image_id": str(index),
-                        "bbox": anno["bbox"],
-                        "category_id": mapped_id,
-                        "id": int(elem_name + str(index))
-                    })
+                    if search_dict(old_classes, anno['category_id']) in new_classes.keys():
+                        mapped_id = new_classes[search_dict(old_classes, anno['category_id'])]
+                        # print(anno["image_id"], anno["category_id"], anno["bbox"])
+                        elem_name = str(mapped_id)
+                        syn_images_anno.append({
+                            "segmentation": [],
+                            "area": 0,
+                            "iscrowd": 0,
+                            "image_id": str(index),
+                            "bbox": anno["bbox"],
+                            "category_id": mapped_id,
+                            "id": int(elem_name + str(index))
+                        })
 
             if counter <= threshold[0]:
                 # print(source_path, dataset_destination + "images/train/" + str(index) + '.jpg')
